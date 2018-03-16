@@ -399,7 +399,7 @@ extension DataStoreActionHandler: WKScriptMessageHandler, WKNavigationDelegate {
 // Test data generator
 extension DataStoreActionHandler {
     public func populateTestData() {
-        let items = [
+        var items = [
             Item.Builder()
                     .title("Amazon")
                     .origins(["www.amazon.com"])
@@ -447,6 +447,21 @@ extension DataStoreActionHandler {
                     .build()
         ]
 
+        let randLength = 10
+        for _ in 1...100 {
+            let newItem = Item.Builder()
+                    .title(randomString(length: randLength))
+                    .entry(ItemEntry.Builder()
+                            .kind("login")
+                            .password(randomString(length: randLength))
+                            .username(randomString(length: randLength))
+                            .build()
+                    )
+                    .build()
+
+            items.append(newItem)
+        }
+
         let encoder = JSONEncoder()
         for item in items {
             guard let encodedItem = try? encoder.encode(item),
@@ -459,10 +474,26 @@ extension DataStoreActionHandler {
                     .disposed(by: self.disposeBag)
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
             self.list()
         })
     }
+}
+
+func randomString(length: Int) -> String {
+
+    let letters: NSString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let len = UInt32(letters.length)
+
+    var randomString = ""
+
+    for _ in 0..<length {
+        let rand = arc4random_uniform(len)
+        var nextChar = letters.character(at: Int(rand))
+        randomString += NSString(characters: &nextChar, length: 1) as String
+    }
+
+    return randomString
 }
 
 // swiftlint:enable function_body_length
